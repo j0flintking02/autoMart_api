@@ -1,0 +1,16 @@
+# Coverage directory used by tools like istanbul
+coverage
+
+# Dependency directories
+node_modules/
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+server/build
+
+# nyc test coverage
+.nyc_output
+
+coverage.lcov
+
+package-lock.json

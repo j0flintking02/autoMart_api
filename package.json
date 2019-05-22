@@ -1,0 +1,57 @@
+{
+  "name": "autoMart_api",
+  "version": "1.0.0",
+  "description": "api for auto dealership",
+  "main": "build/app.js",
+  "scripts": {
+    "start": "nodemon --exec babel-node server/build/app.js",
+    "test": "nyc --require babel-core/register mocha server/test/unit/**.spec.js --exit",
+    "build": "babel server --out-dir server/build --ignore test/",
+    "prebuild": "rm -rf server/build",
+    "prestart": "npm run lint && npm run build",
+    "lint": "eslint server",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/j0flintking02/autoMart_api.git"
+  },
+  "keywords": [],
+  "author": "Jonathan Aurugai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/j0flintking02/autoMart_api/issues"
+  },
+  "homepage": "https://github.com/j0flintking02/autoMart_api#readme",
+  "dependencies": {
+    "@hapi/joi": "^15.0.3",
+    "bcrypt": "^3.0.6",
+    "express": "^4.17.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/node": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "babel-watch": "^7.0.0",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.17.2",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-connect": "^5.7.0",
+    "mocha": "^6.1.4",
+    "mocha-lcov-reporter": "^1.3.0",
+    "nodemon": "^1.19.0",
+    "nyc": "^14.1.1"
+  },
+  "nyc": {
+    "exclude": [
+      "**/test/**"
+    ]
+  }
+}
