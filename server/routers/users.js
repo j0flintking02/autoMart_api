@@ -50,7 +50,7 @@ router.post('/signup', async (req, res) => {
   if (results.error === null) {
     const details = users.find(user => user.email === rawData.email);
     if (details) {
-      res.status(400).send(
+      return res.status(400).send(
         {
           status: res.statusCode,
           data: 'user already exists',
@@ -67,22 +67,21 @@ router.post('/signup', async (req, res) => {
 
     // update the list of users
     users.push(rawData);
-    res.status(201).send(
+    return res.status(201).send(
       {
         status: res.statusCode,
         message: 'Account has been created successfully',
         data: _.pick(rawData, ['id', 'first_name', 'last_name', 'email']),
       },
     );
-  } else {
-    res.status(400).send(
-      {
-        status: res.statusCode,
-        data: results.error,
-
-      },
-    );
   }
+  return res.status(400).send(
+    {
+      status: res.statusCode,
+      data: results.error,
+
+    },
+  );
 });
 
 router.post('/signin', async (req, res) => {
@@ -111,7 +110,7 @@ router.post('/signin', async (req, res) => {
       return res.status(400).send({ message: 'Invalid email or password' });
     }
     // generate a token
-    const token = generateToken(details.id, details.is_admin);
+    const token = generateToken(details.id, details.is_admin, details.email);
     return res.status(200).header('x-auth', token).send({
       status: res.statusCode,
       message: 'welcome back our esteemed customer',
