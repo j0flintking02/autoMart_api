@@ -111,14 +111,13 @@ describe('cars', () => {
           done();
         });
     });
-    // it('should return 400 for invalid input', (done) => {
-    //   const token = chai.request(server).post(loginUrl)
-    // .send(userData).then(res => res.status.data);
-    //   chai.request(server).post('/api/v1/car').set('x-auth', token).send(carData)
-    //     .end((_err, res) => {
-    //       expect(res.status).to.eq(201);
-    //       done();
-    //     });
-    // });
+    it('should return 400 for invalid input', (done) => {
+      const token = chai.request(server).post(loginUrl).send(userData).then(res => res.status.data);
+      chai.request(server).post('/api/v1/car').set('x-auth', token).send(carData)
+        .end((_err, res) => {
+          expect(res.status).to.eq(201);
+          done();
+        });
+    });
   });
 });
