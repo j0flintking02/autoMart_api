@@ -3,7 +3,8 @@ coverage
 
 # Dependency directories
 node_modules/
-
+.idea/
+.env
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 server/build
