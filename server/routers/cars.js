@@ -72,8 +72,8 @@ router.get('/car', (req, res) => {
   if (status === 'available') {
     const available = cars.find(car => car.status === 'sold');
     if (!available) {
-      return res.send({
-        status: 200,
+      return res.status(404).send({
+        status: res.statusCode,
         data: 'There are no car available',
       });
     }
@@ -83,15 +83,16 @@ router.get('/car', (req, res) => {
     });
   }
   if (min_price !== undefined && max_price !== undefined) {
-    const available = cars.filter(elem => (elem.price >= min_price && elem.price <= max_price));
+    // eslint-disable-next-line max-len
+    const available = cars.filter(elem => (parseFloat(elem.price) >= parseFloat(min_price) && parseFloat(elem.price) <= parseFloat(max_price)));
 
-    if (!available) {
-      return res.send({
-        status: 200,
+    if (!available || available.length === 0) {
+      return res.status(404).send({
+        status: res.statusCode,
         data: 'There are no car available',
       });
     }
-    res.status(200).send({
+    return res.status(200).send({
       status: res.statusCode,
       data: available,
     });
@@ -129,22 +130,21 @@ router.post('/car', auth, async (req, res) => {
 
     // update the list of users
     cars.push(rawData);
-    res.status(201).send(
+    return res.status(201).send(
       {
         status: res.statusCode,
         message: 'Account has been created successfully',
         data: rawData,
       },
     );
-  } else {
-    res.status(400).send(
-      {
-        status: res.statusCode,
-        data: results.error,
-
-      },
-    );
   }
+  res.status(400).send(
+    {
+      status: res.statusCode,
+      data: results.error,
+
+    },
+  );
 });
 
 // TODO: User can view a specific car
@@ -182,7 +182,7 @@ router.put('/car/:id/price', auth, (req, res) => {
     );
   }
   if (req.user.id !== details.owner) {
-    return res.send({
+    return res.status(401).send({
       status: res.statusCode,
       data: 'cannot perform this action',
     });
@@ -207,12 +207,11 @@ router.put('/car/:id/status', auth, (req, res) => {
       {
         status: res.statusCode,
         data: 'not found',
-
       },
     );
   }
   if (req.user.id !== details.owner) {
-    return res.send({
+    return res.status(401).send({
       status: res.statusCode,
       data: 'cannot perform this action',
     });
@@ -222,37 +221,6 @@ router.put('/car/:id/status', auth, (req, res) => {
     {
       status: res.statusCode,
       data: details,
-
-    },
-  );
-});
-// TODO: seller can update the price of his/her posted AD
-router.put('/car/:id/price', auth, (req, res) => {
-  const rawData = _.pick(req.body, ['price']);
-  const details = cars.find(car => car.id === parseInt(req.params.id, 10));
-  if (!details) {
-    return res.status(404).send(
-      {
-        status: res.statusCode,
-        data: 'not found',
-
-      },
-    );
-  }
-  if (details.owner === auth.id) {
-    details.price = rawData.price;
-    return res.send(
-      {
-        status: res.statusCode,
-        data: details,
-      },
-    );
-  }
-  return res.status(404).send(
-    {
-      status: res.statusCode,
-      data: 'not found',
-
     },
   );
 });
@@ -272,7 +240,7 @@ router.post('/order', auth, async (req, res) => {
   if (results.error === null) {
     const details = cars.find(car => car.id === parseInt(rawData.car_id, 10));
     if (!details) {
-      res.status(404).send(
+      return res.status(404).send(
         {
           status: res.statusCode,
           data: 'car not found',
@@ -287,21 +255,20 @@ router.post('/order', auth, async (req, res) => {
 
     // update the list of orders
     orders.push(rawData);
-    res.status(201).send(
+    return res.status(201).send(
       {
         status: res.statusCode,
         data: rawData,
       },
     );
-  } else {
-    res.status(400).send(
-      {
-        status: res.statusCode,
-        data: results.error,
-
-      },
-    );
   }
+  return res.status(400).send(
+    {
+      status: res.statusCode,
+      data: results.error,
+
+    },
+  );
 });
 
 // todo: buyer can be able to update purchase order
@@ -335,7 +302,7 @@ router.put('/order/:id/price', auth, async (req, res) => {
     };
     // update data
     details.price_offered = rawData.new_price_offered;
-    return res.status(201).send(
+    return res.status(200).send(
       {
         status: res.statusCode,
         data: update,
@@ -364,7 +331,7 @@ router.delete('/car/:id/', [auth, admin], (req, res) => {
   }
   const index = cars.indexOf(details);
   cars.splice(index, 1);
-  return res.status(201).send(
+  return res.status(200).send(
     {
       status: res.statusCode,
       data: 'car Ad successfully deleted',
