@@ -138,7 +138,7 @@ router.post('/car', auth, async (req, res) => {
       },
     );
   }
-  res.status(400).send(
+  return res.status(400).send(
     {
       status: res.statusCode,
       data: results.error,

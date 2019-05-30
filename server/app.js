@@ -3,6 +3,9 @@ import express from 'express';
 import users from './routers/users';
 import cars from './routers/cars';
 
+// eslint-disable-next-line no-use-before-define
+// require('../startup/prod')(app);
+
 
 const app = express();
 app.use(express.json());
