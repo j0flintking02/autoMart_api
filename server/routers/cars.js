@@ -9,7 +9,7 @@ const router = Router();
 
 
 router.get('/car', manager.viewCarManager());
-router.post('/car', auth, manager.addCar());
+router.post('/car', manager.upload.single('carImage'), auth, manager.addCar());
 
 // TODO: User can view a specific car
 router.get('/car/:id', manager.singleCar());
