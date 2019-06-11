@@ -119,6 +119,8 @@ describe('main', () => {
         .send(userData);
       // eslint-disable-next-line prefer-destructuring
       token = res.body.data.token;
+      // eslint-disable-next-line no-underscore-dangle
+      await chai.request(server).post('/api/v1/car').set('x-auth', token).send(carData);
     });
     describe('routes without authorisation', () => {
       it('should return all cars that are available', (done) => {
@@ -202,13 +204,7 @@ describe('main', () => {
             done();
           });
       });
-      it('should return 200 for updating the status of a car', (done) => {
-        chai.request(server).put('/api/v1/car/5/status').set('x-auth', token).send({ status: 'sold' })
-          .end((_err, res) => {
-            expect(res.status).to.eq(200);
-            done();
-          });
-      });
+
       it('should return 404 for updating the status of a car that does not exist', (done) => {
         chai.request(server).put('/api/v1/car/15/status').set('x-auth', token).send({ status: 'sold' })
           .end((_err, res) => {
@@ -216,6 +212,16 @@ describe('main', () => {
             done();
           });
       });
+
+      it('should return 200 for updating the status of a car', (done) => {
+        chai.request(server).put('/api/v1/car/5/status')
+          .set('x-auth', token).send({ status: 'sold' })
+          .end((_err, res) => {
+            expect(res.status).to.eq(200);
+            done();
+          });
+      });
+
       it('should return 401 for updating the status of a car that is not theirs', (done) => {
         chai.request(server).put('/api/v1/car/1/status').set('x-auth', token).send({ status: 'sold' })
           .end((_err, res) => {
