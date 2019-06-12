@@ -1,15 +1,18 @@
 {
   "name": "autoMart_api",
   "version": "1.0.0",
+  "engines": {
+    "node": "10.15.3"
+  },
   "description": "api for auto dealership",
   "main": "build/app.js",
   "scripts": {
-    "start": "nodemon --exec babel-node server/build/app.js",
+    "start": "babel-node server/build/app.js",
     "test": "nyc --require babel-core/register mocha server/test/**.spec.js --exit",
-    "prestart": "npm run lint && npm run build",
+    "prestart": "npm run build",
     "build": "babel server --out-dir server/build",
     "prebuild": "rm -rf server/build",
-    "lint": "eslint server",
+    "lint": "eslint 'server/**'",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov "
   },
   "repository": {
@@ -27,11 +30,13 @@
     "@hapi/joi": "^15.0.3",
     "babel-istanbul": "^0.12.2",
     "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
     "config": "^3.1.0",
     "dotenv": "^8.0.0",
     "env2": "^2.2.2",
     "express": "^4.17.0",
     "express-async-errors": "^3.1.1",
+    "helmet": "^3.18.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
