@@ -20,7 +20,7 @@ function createUser() {
     if (results.error === null) {
       const details = Data.checkuser(rawData);
       if (details) {
-        return res.status(400).send({
+        return res.status(409).send({
           status: res.statusCode,
           data: 'user already exists',
         });
@@ -32,9 +32,11 @@ function createUser() {
       rawData.password = newPassword;
       // update the list of users
       Data.addUser(rawData);
+      const token = generateToken(rawData.id, rawData.is_admin, rawData.email);
       return res.status(201).send({
         status: res.statusCode,
         message: 'Account has been created successfully',
+        token,
         data: _.pick(rawData, ['id', 'first_name', 'last_name', 'email']),
       });
     }
@@ -70,9 +72,15 @@ function loginUser() {
       }
       // generate a token
       const token = generateToken(details.id, details.is_admin, details.email);
+      const message = function generateMessage(userType) {
+        if (userType !== true) {
+          return 'welcome back our esteemed customer';
+        }
+        return 'Welcome sir the panel is ready for you';
+      };
       return res.status(200).header('x-auth', token).send({
         status: res.statusCode,
-        message: 'welcome back our esteemed customer',
+        message: message(details.is_admin),
         data: {
           token,
           id: details.id,
