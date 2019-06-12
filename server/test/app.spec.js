@@ -156,7 +156,7 @@ describe('main', () => {
       });
       it('should 401 for unauthorised access', (done) => {
         chai.request(server).post('/api/v1/car').send(carData).end((_err, res) => {
-          expect(res.status).to.eq(401);
+          expect(res.status).to.eq(403);
           done();
         });
       });
