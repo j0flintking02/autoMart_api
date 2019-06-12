@@ -18,6 +18,11 @@ if (!config.get('jwtPrivateKey')) {
 app.use('/api/v1/auth/', users);
 app.use('/api/v1/', cars);
 
+app.use((err, req, res, next) => {
+  res.status(500).send('something went wrong');
+  return next();
+});
+
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
 module.exports = app;

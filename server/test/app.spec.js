@@ -67,7 +67,7 @@ describe('main', () => {
         phone: '0753688218',
       };
       chai.request(server).post(signupUrl).send(data).end((err, res) => {
-        expect(res.status).to.eq(400);
+        expect(res.status).to.eq(409);
         done();
       });
     });

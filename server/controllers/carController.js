@@ -7,38 +7,42 @@ const _ = require('lodash');
 const carData = new CarModel();
 
 function viewCarManager() {
-  return (req, res) => {
-    const { status, min_price, max_price } = req.query;
-    if (status === 'available') {
-      const available = carData.findAllAvialable();
-      if (!available) {
-        return res.status(404).send({
-          status: res.statusCode,
-          data: 'There are no car available',
+  return (req, res, next) => {
+    try {
+      const { status, min_price, max_price } = req.query;
+      if (status === 'available') {
+        const available = carData.findAllAvialable();
+        if (!available) {
+          return res.status(404).send({
+            status: res.statusCode,
+            data: 'There are no car available',
+          });
+        }
+        return res.send({
+          status: 200,
+          data: available,
         });
       }
-      return res.send({
-        status: 200,
-        data: available,
-      });
-    }
-    if (min_price !== undefined && max_price !== undefined) {
-      const available = carData.getCarsInPriceRange(min_price, max_price);
-      if (!available || available.length === 0) {
-        return res.status(404).send({
+      if (min_price !== undefined && max_price !== undefined) {
+        const available = carData.getCarsInPriceRange(min_price, max_price);
+        if (!available || available.length === 0) {
+          return res.status(404).send({
+            status: res.statusCode,
+            data: 'There are no car available',
+          });
+        }
+        return res.status(200).send({
           status: res.statusCode,
-          data: 'There are no car available',
+          data: available,
         });
       }
-      return res.status(200).send({
+      return res.status(400).send({
         status: res.statusCode,
-        data: available,
+        data: 'Something went wrong',
       });
+    } catch (err) {
+      return next(err);
     }
-    return res.status(400).send({
-      status: res.statusCode,
-      data: 'Something went wrong',
-    });
   };
 }
 
@@ -150,11 +154,19 @@ function makeOrder() {
           data: 'car not found',
         });
       }
-      // update data
-      carData.makeOrder(rawData, details);
-      return res.status(201).send({
+      const checkInfo = carData.checkUserOrderExisting(req.user.id);
+      console.log(`userId: ${req.user.id} output: ${checkInfo}`);
+      if (checkInfo === undefined) {
+        // update data
+        carData.makeOrder(rawData, req.user.id, details);
+        return res.status(201).send({
+          status: res.statusCode,
+          data: rawData,
+        });
+      }
+      return res.status(409).send({
         status: res.statusCode,
-        data: rawData,
+        message: 'you can not make the same order more than once',
       });
     }
     return res.status(400).send({
