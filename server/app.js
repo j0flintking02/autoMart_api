@@ -19,7 +19,10 @@ app.use('/api/v1/auth/', users);
 app.use('/api/v1/', cars);
 
 app.use((err, req, res, next) => {
-  res.status(500).send('something went wrong');
+  res.status(500).send({
+    status: res.status_code,
+    message: 'something went wrong',
+  });
   return next();
 });
 

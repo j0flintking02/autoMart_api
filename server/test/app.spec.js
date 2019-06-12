@@ -21,12 +21,13 @@ const regData = {
 
 const carData = {
   state: 'used',
-  status: 'unsold',
+  status: 'available',
   price: '200',
   manufacturer: 'toyota',
   model: 'premio',
   body_type: 'car',
 };
+
 
 const userData = {
   email: 'jonathanaurugai12@gmail.com',
@@ -156,7 +157,7 @@ describe('main', () => {
       });
       it('should 401 for unauthorised access', (done) => {
         chai.request(server).post('/api/v1/car').send(carData).end((_err, res) => {
-          expect(res.status).to.eq(401);
+          expect(res.status).to.eq(403);
           done();
         });
       });
@@ -236,6 +237,30 @@ describe('main', () => {
         })
           .end((_err, res) => {
             expect(res.status).to.eq(201);
+            done();
+          });
+      });
+      it('should return 400 for creating an order', (done) => {
+        chai.request(server).post('/api/v1/order').set('x-auth', token).send({
+          car_id: '5',
+          price_offer: '1000',
+        })
+          .end((_err, res) => {
+            expect(res.status).to.eq(400);
+            done();
+          });
+      });
+      it('should return 409 for creating an order', (done) => {
+        chai.request(server).post('/api/v1/order').set('x-auth', token).send({
+          car_id: '5',
+          price_offered: '1000',
+        });
+        chai.request(server).post('/api/v1/order').set('x-auth', token).send({
+          car_id: '5',
+          price_offered: '1000',
+        })
+          .end((_err, res) => {
+            expect(res.status).to.eq(409);
             done();
           });
       });
