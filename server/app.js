@@ -3,13 +3,21 @@ import express from 'express';
 import users from './routers/users';
 import cars from './routers/cars';
 
-
-const app = express();
-app.use(express.json());
+const fs = require('fs');
 // eslint-disable-next-line no-unused-vars
 const env = require('env2')('./.env');
 
+const app = express();
+app.use(express.json());
+
+
 const port = process.env.PORT || 3000;
+
+const dir = './uploads/';
+
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir);
+}
 
 if (!config.get('jwtPrivateKey')) {
   console.log('FATAL ERROR: jwtPrivateKey is not defined.');

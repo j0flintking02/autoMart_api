@@ -1,3 +1,4 @@
 {
-    "jwtPrivateKey":"SECRET_KEY"
+    "jwtPrivateKey":"SECRET_KEY",
+    "CLOUDINARY_URL":"CLOUDINARY_URL"
 }

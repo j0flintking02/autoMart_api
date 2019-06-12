@@ -5,7 +5,9 @@ coverage
 .vscode/
 node_modules/
 .idea/
+.vscode/
 .env
+uploads/
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 server/build
