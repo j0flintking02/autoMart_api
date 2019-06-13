@@ -20,6 +20,7 @@ function viewCarManager() {
         }
         return res.send({
           status: 200,
+          message: 'request completed successfully',
           data: available,
         });
       }
@@ -33,6 +34,7 @@ function viewCarManager() {
         }
         return res.status(200).send({
           status: res.statusCode,
+          message: 'request completed successfully',
           data: available,
         });
       }
@@ -191,6 +193,7 @@ function updateOrder() {
       const update = carData.updateOrder(details, rawData);
       return res.status(200).send({
         status: res.statusCode,
+        message: 'request completed successfully',
         data: update,
       });
     }
@@ -213,6 +216,7 @@ function deleteAD() {
     carData.deleteCar(details);
     return res.status(200).send({
       status: res.statusCode,
+      message: 'request completed successfully',
       data: 'car Ad successfully deleted',
     });
   };
@@ -221,6 +225,7 @@ function deleteAD() {
 function getAll() {
   return (req, res) => res.send({
     status: 200,
+    message: 'request completed successfully',
     data: carData.getAllCars(),
   });
 }
