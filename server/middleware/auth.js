@@ -7,7 +7,7 @@ module.exports = function auth(req, res, next) {
   const token = req.header('x-auth');
   if (!token) {
     return res.status(403).send({
-      status: res.status_code,
+      status: res.statusCode,
       message: 'Access denied',
     });
   }
@@ -17,7 +17,7 @@ module.exports = function auth(req, res, next) {
     next();
   } catch (e) {
     return res.status(400).send({
-      status: res.status_code,
+      status: res.statusCode,
       message: 'Invalid token',
     });
   }

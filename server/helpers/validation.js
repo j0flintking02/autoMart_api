@@ -31,7 +31,7 @@ function validateCarDetails(rawData) {
   const schema = Joi.object().keys({
     state: Joi.string()
       .required(),
-    status: Joi.string()
+    status: Joi.boolean().valid('available').label('values must be available to proceed')
       .required(),
     price: Joi.string().alphanum()
       .required(),
