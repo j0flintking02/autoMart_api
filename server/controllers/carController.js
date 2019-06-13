@@ -73,7 +73,7 @@ function addCar() {
     return res.status(400).send({
       status: res.statusCode,
       message: 'something went wrong',
-      data: results.error,
+      data: results.error.details[0].message,
     });
   };
 }
@@ -178,7 +178,7 @@ function makeOrder() {
     return res.status(400).send({
       status: res.statusCode,
       message: 'something went wrong',
-      data: results.error,
+      data: results.error.details[0].message,
     });
   };
 }
@@ -205,7 +205,7 @@ function updateOrder() {
     return res.status(400).send({
       status: res.statusCode,
       message: 'Something went wrong',
-      data: results.error,
+      data: results.error.details[0].message,
     });
   };
 }

@@ -27,6 +27,15 @@ const regData1 = {
   is_admin: false,
 
 };
+const regData2 = {
+  email: 'samathajoe@gmail.com',
+  first_name: 'samatha',
+  last_name: 'joe',
+  password: 'Root1234',
+  address: 'Kampala',
+  is_admin: false,
+
+};
 
 const carData = {
   state: 'used',
@@ -40,6 +49,10 @@ const carData = {
 
 const userData = {
   email: 'jonathanaurugai12@gmail.com',
+  password: 'Root1234',
+};
+const userData2 = {
+  email: 'samathajoe@gmail.com',
   password: 'Root1234',
 };
 let token;
@@ -64,7 +77,6 @@ describe('main', () => {
       };
       chai.request(server).post(signupUrl).send(data).end((err, res) => {
         expect(res.status).to.eq(400);
-        expect(res.body.message.name).to.eq('ValidationError');
         done();
       });
     });
@@ -90,6 +102,16 @@ describe('main', () => {
           throw error;
         });
     });
+    it('should return a welcome message for regular users', async () => {
+      await chai.request(server).post(signupUrl).send(regData2);
+      chai.request(server).post(loginUrl).send(userData2).then((res) => {
+        expect(res.status).to.eq(200);
+        expect(res.body.message).to.eq('welcome back our esteemed customer');
+      })
+        .catch((error) => {
+          throw error;
+        });
+    });
     it('should return 400 if email not found', () => {
       chai.request(server).post(loginUrl).send({
         email: 'janedoe@gmail.com',
@@ -106,7 +128,7 @@ describe('main', () => {
         email: 'jonathanaurugai12@gmail',
         password: 'Root12345',
       }).then((res) => {
-        expect(res.status).to.eq(400);
+        expect(res.body.status).to.eq(400);
       })
         .catch((error) => {
           throw error;
@@ -133,7 +155,6 @@ describe('main', () => {
       // eslint-disable-next-line prefer-destructuring
       token = res.body.data.token;
       token1 = res1.body.token;
-      // eslint-disable-next-line no-underscore-dangle
       await chai.request(server).post('/api/v1/car').set('x-auth', token).send(carData);
     });
     describe('routes without authorisation', () => {
@@ -170,7 +191,7 @@ describe('main', () => {
       });
       it('should 401 for unauthorised access', (done) => {
         chai.request(server).post('/api/v1/car').send(carData).end((_err, res) => {
-          expect(res.status).to.eq(403);
+          expect(res.status).to.eq(401);
           done();
         });
       });

@@ -42,7 +42,7 @@ function createUser() {
     }
     return res.status(400).send({
       status: res.statusCode,
-      message: results.error,
+      message: results.error.details[0].message,
     });
   };
 }
@@ -93,7 +93,7 @@ function loginUser() {
     return res.status(400).send({
       status: res.statusCode,
       message: 'something went worng',
-      data: results.error,
+      data: results.error.details[0].message,
     });
   };
 }
