@@ -20,7 +20,7 @@ app.use('/api/v1/', cars);
 
 app.use((err, req, res, next) => {
   res.status(500).send({
-    status: res.status_code,
+    status: res.statusCode,
     message: 'something went wrong',
   });
   return next();

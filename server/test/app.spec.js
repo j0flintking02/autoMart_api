@@ -18,6 +18,24 @@ const regData = {
   is_admin: true,
 
 };
+const regData1 = {
+  email: 'adolfokanya@gmail.com',
+  first_name: 'Adolf',
+  last_name: 'Okanya',
+  password: 'Root1234',
+  address: 'Kampala',
+  is_admin: false,
+
+};
+const regData2 = {
+  email: 'samathajoe@gmail.com',
+  first_name: 'samatha',
+  last_name: 'joe',
+  password: 'Root1234',
+  address: 'Kampala',
+  is_admin: false,
+
+};
 
 const carData = {
   state: 'used',
@@ -33,7 +51,12 @@ const userData = {
   email: 'jonathanaurugai12@gmail.com',
   password: 'Root1234',
 };
+const userData2 = {
+  email: 'samathajoe@gmail.com',
+  password: 'Root1234',
+};
 let token;
+let token1;
 
 describe('main', () => {
   describe('test Users login and signup', () => {
@@ -54,7 +77,6 @@ describe('main', () => {
       };
       chai.request(server).post(signupUrl).send(data).end((err, res) => {
         expect(res.status).to.eq(400);
-        expect(res.body.data.name).to.eq('ValidationError');
         done();
       });
     });
@@ -80,6 +102,16 @@ describe('main', () => {
           throw error;
         });
     });
+    it('should return a welcome message for regular users', async () => {
+      await chai.request(server).post(signupUrl).send(regData2);
+      chai.request(server).post(loginUrl).send(userData2).then((res) => {
+        expect(res.status).to.eq(200);
+        expect(res.body.message).to.eq('welcome back our esteemed customer');
+      })
+        .catch((error) => {
+          throw error;
+        });
+    });
     it('should return 400 if email not found', () => {
       chai.request(server).post(loginUrl).send({
         email: 'janedoe@gmail.com',
@@ -96,7 +128,7 @@ describe('main', () => {
         email: 'jonathanaurugai12@gmail',
         password: 'Root12345',
       }).then((res) => {
-        expect(res.status).to.eq(400);
+        expect(res.body.status).to.eq(400);
       })
         .catch((error) => {
           throw error;
@@ -118,9 +150,11 @@ describe('main', () => {
     before(async () => {
       const res = await chai.request(server).post(loginUrl)
         .send(userData);
+      const res1 = await chai.request(server).post(signupUrl)
+        .send(regData1);
       // eslint-disable-next-line prefer-destructuring
       token = res.body.data.token;
-      // eslint-disable-next-line no-underscore-dangle
+      token1 = res1.body.token;
       await chai.request(server).post('/api/v1/car').set('x-auth', token).send(carData);
     });
     describe('routes without authorisation', () => {
@@ -157,7 +191,7 @@ describe('main', () => {
       });
       it('should 401 for unauthorised access', (done) => {
         chai.request(server).post('/api/v1/car').send(carData).end((_err, res) => {
-          expect(res.status).to.eq(403);
+          expect(res.status).to.eq(401);
           done();
         });
       });
@@ -305,6 +339,14 @@ describe('main', () => {
         chai.request(server).delete('/api/v1/car/1').set('x-auth', token)
           .end((_err, res) => {
             expect(res.status).to.eq(200);
+            done();
+          });
+      });
+      it('should return 403 for deleting a car when you are not an admin', (done) => {
+        chai.request(server).delete('/api/v1/car/1').set('x-auth', token1)
+          .end((_err, res) => {
+            expect(res.status).to.eq(403);
+            expect(res.body.message).to.eq('Access denied');
             done();
           });
       });

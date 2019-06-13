@@ -6,9 +6,9 @@ import config from 'config';
 module.exports = function auth(req, res, next) {
   const token = req.header('x-auth');
   if (!token) {
-    return res.status(403).send({
+    return res.status(401).send({
       status: res.statusCode,
-      message: 'Access denied',
+      message: 'You must be logged in to access this content',
     });
   }
   try {
