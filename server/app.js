@@ -3,7 +3,10 @@ import express from 'express';
 import users from './routers/users';
 import cars from './routers/cars';
 
-
+if (!config.get('db')) {
+  console.log('FATAL ERROR: DATABASE_URL is not defined.');
+  process.exit(1);
+}
 const app = express();
 app.use(express.json());
 // eslint-disable-next-line no-unused-vars

@@ -12,7 +12,7 @@ router.get('/car', manager.viewCarManager());
 router.post('/car', auth, manager.addCar());
 
 // TODO: User can view a specific car
-router.get('/car/:id', manager.singleCar());
+router.get('/car/:id', auth, manager.singleCar());
 
 // TODO: seller can update the price
 router.put('/car/:id/price', auth, manager.updatePrice());
