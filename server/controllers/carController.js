@@ -15,12 +15,12 @@ function viewCarManager() {
         if (!available) {
           return res.status(404).send({
             status: res.statusCode,
-            data: 'There are no car available',
+            message: 'There are no car available',
           });
         }
         return res.send({
           status: 200,
-          message: 'request completed successfully',
+          message: 'request was completed successfully',
           data: available,
         });
       }
@@ -29,18 +29,18 @@ function viewCarManager() {
         if (!available || available.length === 0) {
           return res.status(404).send({
             status: res.statusCode,
-            data: 'There are no car available',
+            message: 'There are no car available',
           });
         }
         return res.status(200).send({
           status: res.statusCode,
-          message: 'request completed successfully',
+          message: 'request was completed successfully',
           data: available,
         });
       }
       return res.status(400).send({
         status: res.statusCode,
-        data: 'Something went wrong',
+        message: 'Something went wrong',
       });
     } catch (err) {
       return next(err);
@@ -72,6 +72,7 @@ function addCar() {
     }
     return res.status(400).send({
       status: res.statusCode,
+      message: 'something went wrong',
       data: results.error,
     });
   };
@@ -83,11 +84,12 @@ function singleCar() {
     if (!details) {
       return res.status(404).send({
         status: res.statusCode,
-        data: 'not found',
+        message: 'not found',
       });
     }
     return res.send({
       status: res.statusCode,
+      message: 'request was completed successfully',
       data: details,
     });
   };
@@ -101,19 +103,20 @@ function updatePrice() {
     if (!details) {
       return res.status(404).send({
         status: res.statusCode,
-        data: 'not found',
+        message: 'not found',
       });
     }
     if (req.user.id !== details.owner) {
       return res.status(401).send({
         status: res.statusCode,
-        data: 'cannot perform this action',
+        message: 'cannot perform this action',
       });
     }
     details.price = rawData.price;
 
     return res.send({
       status: res.statusCode,
+      message: 'request was completed successfully',
       data: details,
     });
   };
@@ -126,18 +129,19 @@ function updateStatus() {
     if (!details) {
       return res.status(404).send({
         status: res.statusCode,
-        data: 'not found',
+        message: 'not found',
       });
     }
     if (req.user.id !== details.owner) {
       return res.status(401).send({
         status: res.statusCode,
-        data: 'cannot perform this action',
+        message: 'cannot perform this action',
       });
     }
     details.status = rawData.status;
     return res.send({
       status: res.statusCode,
+      message: 'request was completed successfully',
       data: details,
     });
   };
@@ -153,16 +157,16 @@ function makeOrder() {
       if (!details) {
         return res.status(404).send({
           status: res.statusCode,
-          data: 'car not found',
+          message: 'car not found',
         });
       }
       const checkInfo = carData.checkUserOrderExisting(req.user.id);
-      console.log(`userId: ${req.user.id} output: ${checkInfo}`);
       if (checkInfo === undefined) {
         // update data
         carData.makeOrder(rawData, req.user.id, details);
         return res.status(201).send({
           status: res.statusCode,
+          message: 'request was completed successfully',
           data: rawData,
         });
       }
@@ -173,6 +177,7 @@ function makeOrder() {
     }
     return res.status(400).send({
       status: res.statusCode,
+      message: 'something went wrong',
       data: results.error,
     });
   };
@@ -187,18 +192,19 @@ function updateOrder() {
       if (!details) {
         return res.status(404).send({
           status: res.statusCode,
-          data: 'car not found or a deal was already made',
+          message: 'car not found or a deal was already made',
         });
       }
       const update = carData.updateOrder(details, rawData);
       return res.status(200).send({
         status: res.statusCode,
-        message: 'request completed successfully',
+        message: 'request was completed successfully',
         data: update,
       });
     }
     return res.status(400).send({
       status: res.statusCode,
+      message: 'Something went wrong',
       data: results.error,
     });
   };
@@ -210,14 +216,13 @@ function deleteAD() {
     if (!details) {
       return res.status(404).send({
         status: res.statusCode,
-        data: 'not found',
+        message: 'not found',
       });
     }
     carData.deleteCar(details);
     return res.status(200).send({
       status: res.statusCode,
-      message: 'request completed successfully',
-      data: 'car Ad successfully deleted',
+      message: 'car Ad successfully deleted',
     });
   };
 }
@@ -225,7 +230,7 @@ function deleteAD() {
 function getAll() {
   return (req, res) => res.send({
     status: 200,
-    message: 'request completed successfully',
+    message: 'request was completed successfully',
     data: carData.getAllCars(),
   });
 }

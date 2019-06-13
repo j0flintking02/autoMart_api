@@ -22,7 +22,7 @@ function createUser() {
       if (details) {
         return res.status(409).send({
           status: res.statusCode,
-          data: 'user already exists',
+          message: 'user already exists',
         });
       }
       // generate a hashed password
@@ -42,7 +42,7 @@ function createUser() {
     }
     return res.status(400).send({
       status: res.statusCode,
-      data: results.error,
+      message: results.error,
     });
   };
 }
@@ -59,7 +59,7 @@ function loginUser() {
       if (!details) {
         return res.status(400).send({
           status: res.statusCode,
-          data: 'something went wrong',
+          message: 'something went wrong',
         });
       }
       // validate the password
@@ -92,6 +92,7 @@ function loginUser() {
     }
     return res.status(400).send({
       status: res.statusCode,
+      message: 'something went worng',
       data: results.error,
     });
   };
