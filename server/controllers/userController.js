@@ -8,7 +8,6 @@ import validator from '../helpers/validation';
 
 const _ = require('lodash');
 
-const Data = new UserModel();
 
 function createUser() {
   return async (req, res) => {
@@ -18,31 +17,30 @@ function createUser() {
     ]);
     const results = validator.validateUser(rawData);
     if (results.error === null) {
-      const details = Data.checkuser(rawData);
-      if (details) {
+      const details = await UserModel.checkuser(rawData);
+      if (details.rowCount > 0) {
         return res.status(409).send({
           status: res.statusCode,
           message: 'user already exists',
         });
       }
       // generate a hashed password
-      const newPassword = await generatePassword(rawData, Data.totalUsers());
+      const newPassword = await generatePassword(rawData, UserModel.totalUsers());
       // update data
-      rawData.id = Data.totalUsers() + 1;
       rawData.password = newPassword;
       // update the list of users
-      Data.addUser(rawData);
       const token = generateToken(rawData.id, rawData.is_admin, rawData.email);
+      const data = await UserModel.addUser(rawData);
       return res.status(201).send({
         status: res.statusCode,
         message: 'Account has been created successfully',
         token,
-        data: _.pick(rawData, ['id', 'first_name', 'last_name', 'email']),
+        data: _.pick(data, ['userid', 'first_name', 'last_name', 'email']),
       });
     }
     return res.status(400).send({
       status: res.statusCode,
-      message: results.error,
+      message: results.error.details[0].message,
     });
   };
 }
@@ -55,15 +53,16 @@ function loginUser() {
     const results = validator.validateLogin(rawData);
     if (results.error === null) {
       // check if the user exists in the database
-      const details = Data.checkuser(rawData);
-      if (!details) {
+      const details = await UserModel.checkuser(rawData);
+      if (details.rowCount === 0) {
         return res.status(400).send({
           status: res.statusCode,
           message: 'something went wrong',
         });
       }
+      const userData = details.rows[0];
       // validate the password
-      const validPassword = await compare(rawData.password, details.password);
+      const validPassword = await compare(rawData.password, userData.password);
       if (!validPassword) {
         return res.status(400).send({
           status: res.statusCode,
@@ -71,7 +70,7 @@ function loginUser() {
         });
       }
       // generate a token
-      const token = generateToken(details.id, details.is_admin, details.email);
+      const token = generateToken(userData.userid, userData.is_admin, userData.email);
       const message = function generateMessage(userType) {
         if (userType !== true) {
           return 'welcome back our esteemed customer';
@@ -80,20 +79,20 @@ function loginUser() {
       };
       return res.status(200).header('x-auth', token).send({
         status: res.statusCode,
-        message: message(details.is_admin),
+        message: message(userData.is_admin),
         data: {
           token,
-          id: details.id,
-          first_name: details.first_name,
-          last_name: details.last_name,
-          email: details.email,
+          id: userData.userid,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          email: userData.email,
         },
       });
     }
     return res.status(400).send({
       status: res.statusCode,
       message: 'something went worng',
-      data: results.error,
+      data: results.error.details[0].message,
     });
   };
 }

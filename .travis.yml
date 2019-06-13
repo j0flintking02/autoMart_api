@@ -7,8 +7,12 @@ cache:
     - node_modules
 notifications:
   email: false
+services:
+  - postgresql
 before_script:
 - npm install
+- psql -c "CREATE DATABASE automart2019_test;" -U postgres
+- psql -c "CREATE DATABASE automart2019;" -U postgres
 scripts:
   - npm test
 after_success: nyc report --reporter=text-lcov | coveralls
