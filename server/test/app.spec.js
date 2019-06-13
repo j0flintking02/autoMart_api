@@ -18,6 +18,15 @@ const regData = {
   is_admin: true,
 
 };
+const regData1 = {
+  email: 'adolfokanya@gmail.com',
+  first_name: 'Adolf',
+  last_name: 'Okanya',
+  password: 'Root1234',
+  address: 'Kampala',
+  is_admin: false,
+
+};
 
 const carData = {
   state: 'used',
@@ -34,6 +43,7 @@ const userData = {
   password: 'Root1234',
 };
 let token;
+let token1;
 
 describe('main', () => {
   describe('test Users login and signup', () => {
@@ -54,7 +64,7 @@ describe('main', () => {
       };
       chai.request(server).post(signupUrl).send(data).end((err, res) => {
         expect(res.status).to.eq(400);
-        expect(res.body.data.name).to.eq('ValidationError');
+        expect(res.body.message.name).to.eq('ValidationError');
         done();
       });
     });
@@ -118,8 +128,11 @@ describe('main', () => {
     before(async () => {
       const res = await chai.request(server).post(loginUrl)
         .send(userData);
+      const res1 = await chai.request(server).post(signupUrl)
+        .send(regData1);
       // eslint-disable-next-line prefer-destructuring
       token = res.body.data.token;
+      token1 = res1.body.token;
       // eslint-disable-next-line no-underscore-dangle
       await chai.request(server).post('/api/v1/car').set('x-auth', token).send(carData);
     });
@@ -305,6 +318,14 @@ describe('main', () => {
         chai.request(server).delete('/api/v1/car/1').set('x-auth', token)
           .end((_err, res) => {
             expect(res.status).to.eq(200);
+            done();
+          });
+      });
+      it('should return 403 for deleting a car when you are not an admin', (done) => {
+        chai.request(server).delete('/api/v1/car/1').set('x-auth', token1)
+          .end((_err, res) => {
+            expect(res.status).to.eq(403);
+            expect(res.body.message).to.eq('Access denied');
             done();
           });
       });
