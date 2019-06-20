@@ -1,5 +1,3 @@
-// const db = require('./index');
-
 const users = {
   create: `CREATE TABLE IF NOT EXISTS users (
     userId SERIAL NOT NULL PRIMARY KEY,

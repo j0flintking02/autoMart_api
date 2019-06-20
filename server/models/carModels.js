@@ -24,19 +24,6 @@ const CarModel = {
       .then(res => res).catch(e => console.error(e.stack));
     return data;
   },
-  async getCarsInPriceRange(minPrice, maxPrice) {
-    const status = 'available';
-    const text = {
-
-      name: 'fetch-available-cars-within-price-range',
-      text: 'SELECT * FROM carads WHERE carads.price BETWEEN $1 AND $2 AND status = $3;',
-      values: [minPrice, maxPrice, status],
-    };
-
-    const data = await db.query(text)
-      .then(res => res).catch(e => console.error(e.stack));
-    return data;
-  },
   async addCar(rawData, req) {
     const text = 'INSERT INTO carads (owner, state, status, price, manufacturer, model, body_type, date_created)'
      + 'VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';

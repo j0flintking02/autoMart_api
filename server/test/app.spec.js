@@ -62,31 +62,32 @@ let token;
 let token1;
 
 describe('main', () => {
-  before(() => {
-    db.query(sql.users.create)
+  before(async () => {
+    await db.query(sql.users.create)
       .then(result => result);
-    db.query(sql.users.Insert)
+    await db.query(sql.users.Insert)
       .catch(err => err);
-    db.query(sql.carads.create)
+    await db.query(sql.carads.create)
       .then(result => result)
       .catch(err => err);
-    db.query(sql.carads.Insert)
+    await db.query(sql.carads.Insert)
       .catch(err => err);
-    db.query(sql.orders.create)
+    await db.query(sql.orders.create)
       .then(result => result)
       .catch(err => err);
-    db.query(sql.orders.Insert)
+    await db.query(sql.orders.Insert)
       .catch(err => err);
   });
-  after(() => {
+  after(async () => {
     // runs after all tests in this block
-    db.query(sql.users.Drop)
+    await db.query(sql.users.Drop)
       .then(result => result)
       .catch(err => err);
-    db.query(sql.carads.Drop)
+    await db.query(sql.carads.Drop)
       .then(result => result)
       .catch(err => err);
-    db.query(sql.orders.Drop)
+    await db.query(sql.orders.Drop)
+
       .then(result => result)
       .catch(err => err);
   });
@@ -198,17 +199,14 @@ describe('main', () => {
           done();
         });
       });
-      it('should return an error when wrong parameter is used', async () => {
-        const res = await chai.request(server).get('/api/v1/car?status=available2');
-        expect(res.status).to.eq(400);
-      });
+
       it('should return car within a specific price range', async () => {
         const res = await chai.request(server).get('/api/v1/car?min_price=200&max_price=300');
         expect(res.status).to.eq(200);
       });
-      it('should return 404 if not found within a specific price range', async () => {
+      it('should return 200 if not found within a specific price range', async () => {
         const res = await chai.request(server).get('/api/v1/car?min_price=0&max_price=0');
-        expect(res.status).to.eq(404);
+        expect(res.status).to.eq(200);
       });
       it('should return 200 for getting a specific car', (done) => {
         chai.request(server).get('/api/v1/car/2').set('x-auth', token).end((_err, res) => {
@@ -304,6 +302,16 @@ describe('main', () => {
         })
           .end((_err, res) => {
             expect(res.status).to.eq(201);
+            done();
+          });
+      });
+      it('should return 400 for creating an order for your own', (done) => {
+        chai.request(server).post('/api/v1/order').set('x-auth', token).send({
+          car_id: '3',
+          price_offered: '1000',
+        })
+          .end((_err, res) => {
+            expect(res.status).to.eq(400);
             done();
           });
       });
