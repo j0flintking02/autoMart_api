@@ -21,6 +21,7 @@ function viewCarManager() {
           status: res.statusCode,
           message: 'request was completed successfully',
           data: filtered,
+
         });
       }
       return res.status(200).send({
@@ -162,6 +163,7 @@ function makeOrder() {
           status: res.statusCode,
           message: 'request was completed successfully',
           data: data.rows,
+
         });
       }
       return res.status(409).send({

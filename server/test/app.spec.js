@@ -87,6 +87,7 @@ describe('main', () => {
       .then(result => result)
       .catch(err => err);
     await db.query(sql.orders.Drop)
+
       .then(result => result)
       .catch(err => err);
   });
