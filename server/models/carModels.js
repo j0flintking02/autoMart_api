@@ -1,124 +1,108 @@
 import moment from 'moment';
+import db from '../db/index';
 
-export default class CarModel {
-  constructor() {
-    this.cars = [
-      {
-        id: 1,
-        owner: 2,
-        state: 'used',
-        status: 'sold',
-        price: 200.1,
-        manufacturer: 'audi',
-        model: 'toyota',
-        body_type: 'car',
-        date_created: '2019-05-28T19:39:16+03:00',
-      },
-      {
-        id: 2,
-        owner: 2,
-        state: 'used',
-        status: 'available',
-        price: 200.1,
-        manufacturer: 'audi',
-        model: 'mastung',
-        body_type: 'car',
-        date_created: '2019-05-28T19:39:16+03:00',
-      },
-      {
-        id: 3,
-        owner: 2,
-        state: 'used',
-        status: 'available',
-        price: 200.1,
-        manufacturer: 'audi',
-        model: 'mastung',
-        body_type: 'car',
-        date_created: '2019-05-28T19:39:16+03:00',
-      },
-    ];
-    this.orders = [
-      {
-        car_id: '5',
-        price_offered: '1000',
-        id: 1,
-        date_created: '2019-05-29T00:15:16+03:00',
-        status: 'available',
-        price: '200',
-        userId: 1,
-      },
-    ];
-  }
-
-  checkCarId(id) {
-    return this.cars.find(car => car.id === parseInt(id, 10));
-  }
-
-  findAllAvialable() {
-    return this.cars.filter(car => car.status === 'available');
-  }
-
-  checkCarstatus() {
-    return this.cars.find(car => car.status === 'available');
-  }
-
-  deleteCar(details) {
-    const index = this.cars.indexOf(details);
-    this.cars.splice(index, 1);
-  }
-
-  getAllCars() {
-    return this.cars;
-  }
-
-  updateOrder(details, rawData) {
-    const oldData = details;
-    this.update = {
-      id: details.id,
-      car_id: oldData.car_id,
-      status: oldData.status,
-      old_price_offered: oldData.price_offered,
-      new_price_offered: rawData.new_price_offered,
+const CarModel = {
+  async checkCarId(id) {
+    const text = {
+      name: 'fetch-car-by-id',
+      text: 'SELECT * FROM carads WHERE carid = $1',
+      values: [parseInt(id, 10)],
     };
-    // update data
-    oldData.price_offered = rawData.new_price_offered;
-    return this.update;
-  }
+    const data = await db.query(text)
+      .then(res => res).catch(e => console.error(e.stack));
+    return data;
+  },
+  async findAllAvialable() {
+    const status = 'available';
+    const text = {
+      name: 'fetch-available-cars',
+      text: 'SELECT * FROM carads WHERE status = $1',
+      values: [status],
+    };
 
-  checkOrder(req) {
-    return this.orders.find(order => order.car_id === req.params.id
-        && order.status === 'available');
-  }
+    const data = await db.query(text)
+      .then(res => res).catch(e => console.error(e.stack));
+    return data;
+  },
+  async addCar(rawData, req) {
+    const text = 'INSERT INTO carads (owner, state, status, price, manufacturer, model, body_type, date_created)'
+     + 'VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';
+    const values = [req.user.id, rawData.state, rawData.status,
+      rawData.price, rawData.manufacturer, rawData.model, rawData.body_type,
+      moment().format()];
+    const data = await db.query(text, values)
+      .then(res => res.rows[0]).catch(e => console.error(e.stack));
+    return data;
+  },
+  async updatePrice(price, id) {
+    const text = 'UPDATE carads SET price = $1 WHERE carId = $2 RETURNING *';
+    const values = [price, id];
+    const data = await db.query(text, values)
+      .then(res => res.rows[0]).catch(e => console.error(e.stack));
+    return data;
+  },
+  async updateStatus(status, id) {
+    const text = 'UPDATE carads SET status = $1 WHERE carId = $2 RETURNING *';
+    const values = [status, id];
+    const data = await db.query(text, values)
+      .then(res => res.rows[0]).catch(e => console.error(e.stack));
+    return data;
+  },
+  async checkUserOrderExisting(userId, carId) {
+    const text = {
+      name: 'fetch-order-by-id',
+      text: 'SELECT * FROM orders WHERE userId = $1 AND carId = $2',
+      values: [parseInt(userId, 10), carId],
+    };
+    const data = await db.query(text)
+      .then(res => res).catch(e => console.error(e.stack));
+    return data;
+  },
+  async makeOrder(rawData, userId) {
+    const text = 'INSERT INTO orders (userId, carId, status, price_offered, date_created)'
+     + 'VALUES ($1, $2, $3, $4, $5) RETURNING *';
+    const values = [userId, rawData.car_id, 'pending', rawData.price_offered, moment().format()];
+    const data = await db.query(text, values)
+      .then(res => res).catch(e => console.error(e.stack));
+    return data;
+  },
+  async checkOrder(id) {
+    const status = 'pending';
+    const text = {
+      name: 'check-car-order-by-id',
+      text: 'SELECT * FROM orders WHERE carid = $1 AND status = $2',
+      values: [parseInt(id, 10), status],
+    };
 
-  checkUserOrderExisting(id) {
-    return this.orders.find(order => order.userId === id);
-  }
-
-  makeOrder(rawData, userId, details) {
-    const input = rawData;
-    input.id = this.orders.length + 1;
-    input.date_created = moment().format();
-    input.status = 'pending';
-    input.price = details.price;
-    input.userId = userId;
-    // update the list of orders
-    this.orders.push(input);
-  }
-
-
-  addcarData(rawData, req) {
-    const input = rawData;
-    input.id = this.cars.length + 1;
-    input.owner = req.user.id;
-    input.date_created = moment().format();
-    // update the list of users
-    this.cars.push(input);
-  }
-
-  getCarsInPriceRange(minPrice, maxPrice) {
-    return this.cars.filter(
-      elem => parseFloat(elem.price) >= parseFloat(minPrice)
-        && parseFloat(elem.price) <= parseFloat(maxPrice),
-    );
-  }
-}
+    const data = await db.query(text)
+      .then(res => res).catch(e => console.error(e.stack));
+    return data;
+  },
+  async updateOrder(details, offer) {
+    const text = 'UPDATE orders SET price_offered = $1 WHERE carId = $2 RETURNING *';
+    const values = [parseFloat(offer), details.carid];
+    const data = await db.query(text, values)
+      .then(res => res.rows[0]).catch(e => console.error(e.stack));
+    return data;
+  },
+  async deleteCar(id) {
+    const text = {
+      name: 'delete-car-by-id',
+      text: 'DELETE FROM carads WHERE carid = $1;',
+      values: [parseInt(id, 10)],
+    };
+    const data = await db.query(text)
+      .then(res => res).catch(e => console.error(e.stack));
+    return data;
+  },
+  async getAllcars() {
+    const text = {
+      name: 'fetch-all-cars',
+      text: 'SELECT * FROM carads',
+    };
+    const data = await db.query(text)
+      .then(res => res).catch(e => console.error(e.stack));
+    return data.rows;
+  },
+};
+export default CarModel;

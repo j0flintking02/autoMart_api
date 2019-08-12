@@ -1,6 +1,9 @@
+/* eslint-disable max-len */
 import chai from 'chai';
 import chaiHttp from 'chai-http';
 import server from '../app';
+import db from '../db/index';
+import sql from '../db/tables';
 
 const { expect } = chai;
 const signupUrl = '/api/v1/auth/signup';
@@ -59,10 +62,39 @@ let token;
 let token1;
 
 describe('main', () => {
+  before(async () => {
+    await db.query(sql.users.create)
+      .then(result => result);
+    await db.query(sql.users.Insert)
+      .catch(err => err);
+    await db.query(sql.carads.create)
+      .then(result => result)
+      .catch(err => err);
+    await db.query(sql.carads.Insert)
+      .catch(err => err);
+    await db.query(sql.orders.create)
+      .then(result => result)
+      .catch(err => err);
+    await db.query(sql.orders.Insert)
+      .catch(err => err);
+  });
+  after(async () => {
+    // runs after all tests in this block
+    await db.query(sql.users.Drop)
+      .then(result => result)
+      .catch(err => err);
+    await db.query(sql.carads.Drop)
+      .then(result => result)
+      .catch(err => err);
+    await db.query(sql.orders.Drop)
+
+      .then(result => result)
+      .catch(err => err);
+  });
+
   describe('test Users login and signup', () => {
     it('should return a new user with the supplied properties', (done) => {
       chai.request(server).post(signupUrl).send(regData).end((_err, res) => {
-        console.log(res.body.message);
         expect(res.status).to.eq(201);
         done();
       });
@@ -74,6 +106,7 @@ describe('main', () => {
         password: 'Root1234',
         address: 'kampala',
         phone: '0753688218',
+        is_admin: '',
       };
       chai.request(server).post(signupUrl).send(data).end((err, res) => {
         expect(res.status).to.eq(400);
@@ -82,12 +115,13 @@ describe('main', () => {
     });
     it('should return error if email already exists', (done) => {
       const data = {
-        email: 'jonathanaurugai@gmail.com',
+        email: 'jonathanaurugai12@gmail.com',
         first_name: 'jane',
         last_name: 'doe',
         password: 'Root1234',
         address: 'kampala',
         phone: '0753688218',
+        is_admin: 'false',
       };
       chai.request(server).post(signupUrl).send(data).end((err, res) => {
         expect(res.status).to.eq(409);
@@ -161,30 +195,27 @@ describe('main', () => {
       it('should return all cars that are available', (done) => {
         chai.request(server).get(available).end((_err, res) => {
           expect(res.status).to.eq(200);
-          expect(res.body.data[0]).to.have.property('id');
+          expect(res.body.data[0]).to.have.property('carid');
           done();
         });
       });
-      it('should return an error when wrong parameter is used', async () => {
-        const res = await chai.request(server).get('/api/v1/car?status=available2');
-        expect(res.status).to.eq(400);
-      });
+
       it('should return car within a specific price range', async () => {
         const res = await chai.request(server).get('/api/v1/car?min_price=200&max_price=300');
         expect(res.status).to.eq(200);
       });
-      it('should return 404 if not found within a specific price range', async () => {
+      it('should return 200 if not found within a specific price range', async () => {
         const res = await chai.request(server).get('/api/v1/car?min_price=0&max_price=0');
-        expect(res.status).to.eq(404);
+        expect(res.status).to.eq(200);
       });
       it('should return 200 for getting a specific car', (done) => {
-        chai.request(server).get('/api/v1/car/1').end((_err, res) => {
+        chai.request(server).get('/api/v1/car/2').set('x-auth', token).end((_err, res) => {
           expect(res.status).to.eq(200);
           done();
         });
       });
       it('should return 404 for getting a specific car that doesnot exist', (done) => {
-        chai.request(server).get('/api/v1/car/150').end((_err, res) => {
+        chai.request(server).get('/api/v1/car/150').set('x-auth', token).end((_err, res) => {
           expect(res.status).to.eq(404);
           done();
         });
@@ -219,21 +250,21 @@ describe('main', () => {
           });
       });
       it('should return 200 for updating the price of a car', (done) => {
-        chai.request(server).put('/api/v1/car/5/price').set('x-auth', token).send({ price: '200' })
+        chai.request(server).put('/api/v1/car/4/price').set('x-auth', token).send({ price: '200' })
           .end((_err, res) => {
             expect(res.status).to.eq(200);
             done();
           });
       });
       it('should return 404 for updating the price of a car that does not exist', (done) => {
-        chai.request(server).put('/api/v1/car/15/price').set('x-auth', token).send({ price: '200' })
+        chai.request(server).put('/api/v1/car/180/price').set('x-auth', token1).send({ price: '200' })
           .end((_err, res) => {
             expect(res.status).to.eq(404);
             done();
           });
       });
       it('should return 401 for updating the price of a car that is not theirs', (done) => {
-        chai.request(server).put('/api/v1/car/1/price').set('x-auth', token).send({ price: '200' })
+        chai.request(server).put('/api/v1/car/3/price').set('x-auth', token1).send({ price: '200' })
           .end((_err, res) => {
             expect(res.status).to.eq(401);
             done();
@@ -241,7 +272,7 @@ describe('main', () => {
       });
 
       it('should return 404 for updating the status of a car that does not exist', (done) => {
-        chai.request(server).put('/api/v1/car/15/status').set('x-auth', token).send({ status: 'sold' })
+        chai.request(server).put('/api/v1/car/150/status').set('x-auth', token).send({ status: 'sold' })
           .end((_err, res) => {
             expect(res.status).to.eq(404);
             done();
@@ -249,7 +280,7 @@ describe('main', () => {
       });
 
       it('should return 200 for updating the status of a car', (done) => {
-        chai.request(server).put('/api/v1/car/5/status')
+        chai.request(server).put('/api/v1/car/3/status')
           .set('x-auth', token).send({ status: 'sold' })
           .end((_err, res) => {
             expect(res.status).to.eq(200);
@@ -258,7 +289,7 @@ describe('main', () => {
       });
 
       it('should return 401 for updating the status of a car that is not theirs', (done) => {
-        chai.request(server).put('/api/v1/car/1/status').set('x-auth', token).send({ status: 'sold' })
+        chai.request(server).put('/api/v1/car/1/status').set('x-auth', token1).send({ status: 'sold' })
           .end((_err, res) => {
             expect(res.status).to.eq(401);
             done();
@@ -266,11 +297,21 @@ describe('main', () => {
       });
       it('should return 201 for creating an order', (done) => {
         chai.request(server).post('/api/v1/order').set('x-auth', token).send({
-          car_id: '5',
+          car_id: '2',
           price_offered: '1000',
         })
           .end((_err, res) => {
             expect(res.status).to.eq(201);
+            done();
+          });
+      });
+      it('should return 400 for creating an order for your own', (done) => {
+        chai.request(server).post('/api/v1/order').set('x-auth', token).send({
+          car_id: '3',
+          price_offered: '1000',
+        })
+          .end((_err, res) => {
+            expect(res.status).to.eq(400);
             done();
           });
       });
@@ -290,7 +331,7 @@ describe('main', () => {
           price_offered: '1000',
         });
         chai.request(server).post('/api/v1/order').set('x-auth', token).send({
-          car_id: '5',
+          car_id: '2',
           price_offered: '1000',
         })
           .end((_err, res) => {
@@ -300,7 +341,7 @@ describe('main', () => {
       });
       it('should return 404 for creating an order for a car that does not exist', (done) => {
         chai.request(server).post('/api/v1/order').set('x-auth', token).send({
-          car_id: '15',
+          car_id: '150',
           price_offered: '1000',
         })
           .end((_err, res) => {
@@ -309,7 +350,7 @@ describe('main', () => {
           });
       });
       it('should return 200 for updating an order', (done) => {
-        chai.request(server).put('/api/v1/order/5/price').set('x-auth', token).send({
+        chai.request(server).put('/api/v1/order/2/price').set('x-auth', token).send({
           new_price_offered: '2000',
         })
           .end((_err, res) => {
@@ -343,7 +384,7 @@ describe('main', () => {
           });
       });
       it('should return 403 for deleting a car when you are not an admin', (done) => {
-        chai.request(server).delete('/api/v1/car/1').set('x-auth', token1)
+        chai.request(server).delete('/api/v1/car/4').set('x-auth', token1)
           .end((_err, res) => {
             expect(res.status).to.eq(403);
             expect(res.body.message).to.eq('Access denied');
@@ -351,7 +392,7 @@ describe('main', () => {
           });
       });
       it('should return 404 for deleting a car that does not exist', (done) => {
-        chai.request(server).delete('/api/v1/car/12').set('x-auth', token)
+        chai.request(server).delete('/api/v1/car/120').set('x-auth', token)
           .end((_err, res) => {
             expect(res.status).to.eq(404);
             done();
