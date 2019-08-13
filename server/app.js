@@ -1,5 +1,6 @@
 import config from 'config';
 import express from 'express';
+import cors from 'cors';
 import users from './routers/users';
 import cars from './routers/cars';
 
@@ -9,6 +10,7 @@ if (!config.get('db')) {
 }
 const app = express();
 app.use(express.json());
+app.use(cors());
 // eslint-disable-next-line no-unused-vars
 const env = require('env2')('./.env');
 
